@@ -153,12 +153,17 @@ public:
 	bool checkRippleStartPosition(QPoint position) const override;
 	void setLocked(bool locked);
 
+	// StaticGram: the Material 3 thumb grows while the switch is pressed.
+	void setPressed(bool pressed);
+
 private:
 	void paintXV(QPainter &p, int left, int top, int outerWidth, float64 toggled, const QBrush &brush);
 	QSize rippleSize() const;
 
 	not_null<const style::Toggle*> _st;
+	Ui::Animations::Simple _pressAnimation;
 	bool _locked = false;
+	bool _pressed = false;
 
 };
 

@@ -113,7 +113,10 @@ void ToggleView::paint(QPainter &p, int left, int top, int outerWidth) {
 			QRectF(track).adjusted(1, 1, -1, -1),
 			radius - 1,
 			radius - 1);
-		const auto thumb = height * (0.25 + 0.125 * toggled);
+		// StaticGram: 16 / 24 of the 32 track off / on, 28 pressed (M3).
+		const auto pressed = _pressAnimation.value(_pressed ? 1. : 0.);
+		const auto thumb = height * (0.25 + 0.125 * toggled)
+			+ height * (0.4375 - 0.25 - 0.125 * toggled) * pressed;
 		const auto fromX = radius;
 		const auto toX = width - radius;
 		const auto centerX = fromX + (toX - fromX) * toggled;
@@ -247,6 +250,18 @@ void ToggleView::paintXV(QPainter &p, int left, int top, int outerWidth, float64
 
 		p.fillPath(anim::path(pathV), brush);
 	}
+}
+
+void ToggleView::setPressed(bool pressed) {
+	if (_pressed == pressed) {
+		return;
+	}
+	_pressed = pressed;
+	_pressAnimation.start(
+		[=] { update(); },
+		pressed ? 0. : 1.,
+		pressed ? 1. : 0.,
+		_st->duration);
 }
 
 QSize ToggleView::rippleSize() const {
@@ -934,6 +949,10 @@ void Checkbox::onStateChanged(State was, StateChangeSource source) {
 	} else if (!isDisabled() && (was & StateFlag::Disabled)) {
 		setCursor(style::cur_pointer);
 		_checkCache = QPixmap();
+	}
+
+	if (const auto toggle = dynamic_cast<ToggleView*>(_check.get())) {
+		toggle->setPressed(isDown() && !isDisabled());
 	}
 
 	auto now = state();

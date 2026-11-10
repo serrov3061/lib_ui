@@ -1093,6 +1093,7 @@ void SettingsButton::onStateChanged(
 	}
 	if (_toggle) {
 		_toggle->setStyle(isOver() ? _st.toggleOver : _st.toggle);
+		_toggle->setPressed(isDown() && !nowDisabled);
 	}
 	if (nowDisabled != wasDisabled) {
 		setPointerCursor(!isDisabled());
