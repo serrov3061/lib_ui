@@ -189,6 +189,7 @@ public:
 
 protected:
 	void paintEvent(QPaintEvent *e) override;
+	void onStateChanged(State was, StateChangeSource source) override;
 
 	QImage prepareRippleMask() const override;
 	QPoint prepareRippleStartPosition() const override;
@@ -219,6 +220,10 @@ private:
 	RoundButtonTextTransform _transform = RoundButtonTextTransform::NoTransform;
 	bool _fullRadius = false;
 	std::optional<std::array<int, 4>> _cornerRadii;
+
+	// StaticGram: the hover background and text fade in / out smoothly.
+	Ui::Animations::Simple _overAnimation;
+	bool _overShown = false;
 
 };
 

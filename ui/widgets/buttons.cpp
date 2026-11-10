@@ -519,8 +519,12 @@ void RoundButton::paintEvent(QPaintEvent *e) {
 
 	auto over = isOver();
 	auto down = isDown();
-	if (!_brushOverride && (over || down)) {
+	const auto overProgress = _overAnimation.value(_overShown ? 1. : 0.);
+	if (!_brushOverride && overProgress > 0.) {
+		const auto opacity = p.opacity();
+		p.setOpacity(opacity * overProgress);
 		drawRect(_roundRectOver);
+		p.setOpacity(opacity);
 	}
 
 	if (!_penOverride || _rippleOverride) {
@@ -553,7 +557,7 @@ void RoundButton::paintEvent(QPaintEvent *e) {
 		if (_textFgOverride) {
 			p.setPen(*_textFgOverride);
 		} else {
-			p.setPen((over || down) ? _st.textFgOver : _st.textFg);
+			p.setPen(anim::pen(_st.textFg, _st.textFgOver, overProgress));
 		}
 		auto local = st::defaultTextPalette;
 		local.linkFg = (over || down)
@@ -578,6 +582,19 @@ void RoundButton::paintEvent(QPaintEvent *e) {
 			? _st.iconOver
 			: _st.icon;
 		current.paint(p, QPoint(iconLeft, iconTop), width());
+	}
+}
+
+void RoundButton::onStateChanged(State was, StateChangeSource source) {
+	RippleButton::onStateChanged(was, source);
+	const auto shown = (isOver() || isDown());
+	if (_overShown != shown) {
+		_overShown = shown;
+		_overAnimation.start(
+			[=] { update(); },
+			shown ? 0. : 1.,
+			shown ? 1. : 0.,
+			crl::time(150));
 	}
 }
 
